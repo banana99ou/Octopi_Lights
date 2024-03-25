@@ -6,7 +6,7 @@
 
 // Which pin on the Arduino is connected to the NeoPixels?
 // On a Trinket or Gemma we suggest changing this to 1:
-#define LED_PIN    6
+#define LED_PIN 9
 
 // How many NeoPixels are attached to the Arduino?
 #define LED_COUNT 59
@@ -29,16 +29,17 @@ Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 // setup() function -- runs once at startup --------------------------------
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   strip.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
   strip.show();            // Turn OFF all pixels ASAP
-  strip.setBrightness(50); // Set BRIGHTNESS to about 1/5 (max = 255)
+  strip.setBrightness(100); // Set BRIGHTNESS to about 1/5 (max = 255)
 }
 
 
 // loop() function -- runs repeatedly as long as board is on ---------------
 
 void loop() {
+  //Serial.println("running");
 
   serialEvent();
   if(stringComplete) {
@@ -47,20 +48,20 @@ void loop() {
     //   int amount = inputString.substring(5).toInt();
     //   Step(amount);
     // }
-    if(inputString.startsWith("white")) {
+    if(inputString.startsWith("rainbow")) {
+      Serial.println("Ack: rainbow");
+      delay(100);
+      rainbow(1);
+    }
+    else if(inputString.startsWith("white")) {
       Serial.println("Ack: white");
       delay(100);
-      colorWipe(strip.Color(255,   255,   255), 50);
+      colorWipe(strip.Color(255,   255,   255), 30);
     }
     else if(inputString.startsWith("off")) {
       Serial.println("Ack: off");
       delay(100);
       colorWipe(strip.Color(0,   0,   0), 0);
-    }
-    else if(inputString.startsWith("rainbow")) {
-      Serial.println("Ack: rainbow");
-      delay(100);
-      rainbow(1);
     }
     else{
       Serial.println("commands: white, off, rainbow");
@@ -105,6 +106,7 @@ void theaterChase(uint32_t color, int wait) {
 
 // Rainbow cycle along whole strip. Pass delay time (in ms) between frames.
 void rainbow(int wait) {
+  stringComplete = false;
   // Hue of first pixel runs 5 complete loops through the color wheel.
   // Color wheel has a range of 65536 but it's OK if we roll over, so
   // just count from 0 to 5*65536. Adding 256 to firstPixelHue each time
@@ -120,6 +122,10 @@ void rainbow(int wait) {
     // strip.rainbow(firstPixelHue, 1, 255, 255, true);
     strip.show(); // Update strip with new contents
     delay(wait);  // Pause for a moment
+    serialEvent();
+    if(stringComplete){
+      break;
+    }
   }
 }
 
